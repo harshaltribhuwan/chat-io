@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>Chat.io</title>
+    <style>
+      body {
+        background: #f0ece3;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .main__container {
+        height: 97vh;
+        width: 97vw;
+        display: grid;
+        place-items: center;
+      }
+
+      .btn {
+        cursor: pointer;
+        color: #ffffff;
+        background: #4267b2;
+        height: 32px;
+        width: 80px;
+        transition: all 0.1s ease-in-out;
+        border: 1px solid transparent;
+      }
+
+      .btn:hover {
+        transform: scale(1.05);
+        border: 1px solid gray;
+      }
+
+      .title {
+        color: #4267b2;
+        font-family: "Pacifico", cursive;
+        /* text-decoration: underline; */
+        /* text-align: center; */
+      }
+
+      #container {
+        /* width: 700px; */
+        margin: 0 auto;
+      }
+
+      input {
+        border-radius: 10px;
+      }
+
+      input:focus {
+        outline: none;
+      }
+
+      input[type="text"] {
+        text-align: center;
+      }
+
+      #chatWindow {
+        height: 300px;
+        overflow: scroll;
+      }
+
+      #mainWrapper {
+        display: none;
+      }
+
+      #chatWrapper {
+        float: left;
+        border: 1px #ccc solid;
+        border-radius: 10px;
+        background: whitesmoke;
+        padding: 10px;
+      }
+
+      #userWrapper {
+        float: left;
+        border: 1px #ccc solid;
+        border-radius: 10px;
+        background: #f4f4f4;
+        padding: 10px;
+        margin-left: 20px;
+        width: 150px;
+        max-height: 200px;
+      }
+
+      #namesWrapper {
+        float: left;
+        border: 1px #ccc solid;
+        border-radius: 10px;
+        background: #f4f4f4;
+        padding: 10px;
+        margin-left: 20px;
+      }
+
+      input {
+        height: 30px;
+        border: solid 1px #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main__container">
+      <div id="container">
+        <div id="namesWrapper">
+          <h2 class="title">{ Chat.io }</h2>
+          <p>Create Username:</p>
+          <div id="error"></div>
+          <form id="usernameForm">
+            <input type="text" size="35" id="username" autocomplete="off" />
+            <input class="btn" type="submit" value="Submit" />
+          </form>
+        </div>
+
+        <div id="mainWrapper">
+          <h2 class="title">{ Chat.io }</h2>
+          <div id="chatWrapper">
+            <div id="chatWindow"></div>
+            <form id="messageForm">
+              <input
+                type="text"
+                size="35"
+                id="message"
+                placeholder="Say Something..."
+                autocomplete="off"
+              />
+              <input class="btn" type="submit" value="Submit" />
+            </form>
+          </div>
+
+          <div id="userWrapper">
+            <div id="users"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      $(function () {
+        var socket = io.connect();
+        var $messageForm = $("#messageForm");
+        var $message = $("#message");
+        var $chat = $("#chatWindow");
+        var $usernameForm = $("#usernameForm");
+        var $users = $("#users");
+        var $username = $("#username");
+        var $error = $("#error");
+
+        $usernameForm.submit(function (e) {
+          e.preventDefault();
+          socket.emit("new user", $username.val(), function (data) {
+            if (data) {
+              $("#namesWrapper").hide();
+              $("#mainWrapper").show();
+            } else {
+              $error.html("Username is taken");
+            }
+          });
+        });
+
+        socket.on("usernames", function (data) {
+          var html = "";
+          for (i = 0; i < data.length; i++) {
+            html += data[i] + "<br>";
+          }
+          $users.html(html);
+        });
+
+        $messageForm.submit(function (e) {
+          e.preventDefault();
+          socket.emit("send message", $message.val());
+          $message.val("");
+        });
+
+        socket.on("new message", function (data) {
+          $chat.append(
+            "<strong>" + data.user + "</strong>: " + data.msg + "<br>"
+          );
+        });
+      });
+    </script>
+  </body>
+</html>
