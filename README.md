@@ -1,3 +1,3 @@
 # Technologies used
 
-Node.js, Socket.io, JQuery, HTML, CSS
+Node.js, Express.js, Socket.io, JQuery, HTML, and CSS.
